@@ -1,56 +1,57 @@
-import MessageListItem from '../components/MessageListItem';
+import { IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import { useState } from 'react';
-import { Message, getMessages } from '../data/messages';
-import {
-  IonContent,
-  IonHeader,
-  IonList,
-  IonPage,
-  IonRefresher,
-  IonRefresherContent,
-  IonTitle,
-  IonToolbar,
-  useIonViewWillEnter
-} from '@ionic/react';
 import './Home.css';
+import { trash } from 'ionicons/icons';
+import { v4 as uuidv4 } from 'uuid';
+
+
+
+type taskListProps = {
+  id: string,
+  name: string
+}
 
 const Home: React.FC = () => {
+  const [taskName, setTaskName] = useState<string>('')
+  const [taskList, setTaksList] = useState<taskListProps[]>([])
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const onSubmitTask = () => {
+    setTaksList(values => [...values, {
+      id: uuidv4(),
+      name: taskName
+    }])
+  }
 
-  useIonViewWillEnter(() => {
-    const msgs = getMessages();
-    setMessages(msgs);
-  });
-
-  const refresh = (e: CustomEvent) => {
-    setTimeout(() => {
-      e.detail.complete();
-    }, 3000);
-  };
+  const onRemoveTask = (id: string) => {
+    setTaksList(values => values.filter(task => task.id !== id))
+  }
 
   return (
-    <IonPage id="home-page">
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Inbox</IonTitle>
+    <IonPage>
+      <IonHeader >
+        <IonToolbar >
+          <IonTitle >Lista de tarefas</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={refresh}>
-          <IonRefresherContent></IonRefresherContent>
-        </IonRefresher>
-
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">
-              Inbox
-            </IonTitle>
-          </IonToolbar>
-        </IonHeader>
-
+      <IonContent className='ion-padding'>
+        <IonItem>
+          <IonLabel position='stacked'>Nome da tarefa</IonLabel>
+          <IonInput type='text' value={taskName} onIonChange={e => setTaskName(e.detail.value ? e.detail.value.toString() : '')} />
+        </IonItem>
+        <IonButton onClick={onSubmitTask} expand='full' >Adicionar</IonButton>
         <IonList>
-          {messages.map(m => <MessageListItem key={m.id} message={m} />)}
+          <IonText>Tarefas</IonText>
+          {taskList.map(task => {
+            return (
+              <IonItem key={task.id}>
+                <IonLabel>{task.name}</IonLabel>
+                <IonButton onClick={() => onRemoveTask(task.id)} fill='clear'>
+                  <IonIcon icon={trash} />
+                </IonButton>
+              </IonItem>
+            )
+          })}
+
         </IonList>
       </IonContent>
     </IonPage>
